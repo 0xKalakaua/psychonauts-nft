@@ -20,13 +20,6 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 
-//interface PaintswapInterface {
-    //function getOwnerOfToken(address tokenContract, uint tokenId)
-        //external
-        //view
-        //returns (address);
-//}
-
 contract Psychonauts is AccessControlEnumerable, ERC721Enumerable, ERC721URIStorage {
     using Counters for Counters.Counter;
     using Strings for uint;
@@ -34,7 +27,6 @@ contract Psychonauts is AccessControlEnumerable, ERC721Enumerable, ERC721URIStor
     Counters.Counter public tokenIdTracker;
     uint public max_supply;
     uint public price;
-    //mapping (uint => bool) public escapedGimps;
 
     mapping(uint => bool) private hasPyschonaut;
     string private _baseTokenURI;
@@ -43,7 +35,6 @@ contract Psychonauts is AccessControlEnumerable, ERC721Enumerable, ERC721URIStor
     bool private _revealed = false;
     bool private _openMint;
     IERC721 private _theGimpies;
-    //PaintswapInterface private _paintswap;
     address payable private _wallet;
 
     constructor (
@@ -55,7 +46,6 @@ contract Psychonauts is AccessControlEnumerable, ERC721Enumerable, ERC721URIStor
         uint mintPrice,
         uint max,
         address theGimpiesAddress,
-        //address PaintswapAddress,
         address payable wallet
     )
         ERC721 (name, symbol)
@@ -68,7 +58,6 @@ contract Psychonauts is AccessControlEnumerable, ERC721Enumerable, ERC721URIStor
         _notRevealedURI = notRevealedURI;
         _openMint = false;
         _theGimpies = IERC721(theGimpiesAddress);
-        //_paintswap = PaintswapInterface(PaintswapAddress);
         _wallet = wallet;
         _setupRole(DEFAULT_ADMIN_ROLE, wallet);
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -176,12 +165,4 @@ contract Psychonauts is AccessControlEnumerable, ERC721Enumerable, ERC721URIStor
     {
         super._beforeTokenTransfer(from, to, tokenId);
     }
-
-    //function _hasGimpInPaintswap(address sender, uint gimpiesTokenId) private view returns (bool) {
-        //if (_paintswap.getOwnerOfToken(address(_theGimpies), gimpiesTokenId) == sender) {
-            //return true;
-        //}
-        //return false;
-
-    //}
 }
