@@ -13,19 +13,19 @@ A Gimpies Project                                                     contract b
 
 pragma solidity ^0.8.0;
 
-import "ERC721.sol";
-import "IERC721.sol";
-import "ERC721Enumerable.sol";
-import "ERC721URIStorage.sol";
-import "Counters.sol";
-import "AccessControlEnumerable.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 
-interface PaintswapInterface {
-    function getOwnerOfToken(address tokenContract, uint tokenId)
-        external
-        view
-        returns (address);
-}
+//interface PaintswapInterface {
+    //function getOwnerOfToken(address tokenContract, uint tokenId)
+        //external
+        //view
+        //returns (address);
+//}
 
 contract Psychonauts is AccessControlEnumerable, ERC721Enumerable, ERC721URIStorage {
     using Counters for Counters.Counter;
@@ -34,7 +34,7 @@ contract Psychonauts is AccessControlEnumerable, ERC721Enumerable, ERC721URIStor
     Counters.Counter public tokenIdTracker;
     uint public max_supply;
     uint public price;
-    mapping (uint => bool) public escapedGimps;
+    //mapping (uint => bool) public escapedGimps;
 
     mapping(uint => bool) private hasPyschonaut;
     string private _baseTokenURI;
@@ -42,8 +42,8 @@ contract Psychonauts is AccessControlEnumerable, ERC721Enumerable, ERC721URIStor
     string private _notRevealedURI;
     bool private _revealed = false;
     bool private _openMint;
-    IERC721 private_theGimpies;
-    PaintswapInterface private _paintswap;
+    IERC721 private _theGimpies;
+    //PaintswapInterface private _paintswap;
     address payable private _wallet;
 
     constructor (
@@ -55,8 +55,7 @@ contract Psychonauts is AccessControlEnumerable, ERC721Enumerable, ERC721URIStor
         uint mintPrice,
         uint max,
         address theGimpiesAddress,
-        address PaintswapAddress,
-        address admin,
+        //address PaintswapAddress,
         address payable wallet
     )
         ERC721 (name, symbol)
@@ -69,9 +68,8 @@ contract Psychonauts is AccessControlEnumerable, ERC721Enumerable, ERC721URIStor
         _notRevealedURI = notRevealedURI;
         _openMint = false;
         _theGimpies = IERC721(theGimpiesAddress);
-        _paintswap = PaintswapInterface(PaintswapAddress);
+        //_paintswap = PaintswapInterface(PaintswapAddress);
         _wallet = wallet;
-        _setupRole(DEFAULT_ADMIN_ROLE, admin);
         _setupRole(DEFAULT_ADMIN_ROLE, wallet);
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
@@ -81,7 +79,7 @@ contract Psychonauts is AccessControlEnumerable, ERC721Enumerable, ERC721URIStor
         _;
     }
 
-    function revealPyschonauts() external onlyAdmin {
+    function revealPsychonauts() external onlyAdmin {
         _revealed = true;
     }
 
@@ -101,38 +99,39 @@ contract Psychonauts is AccessControlEnumerable, ERC721Enumerable, ERC721URIStor
         price = mintPrice;
     }
 
-    function setMint(bool openMint) external onlyAdmin {
-        _openMint = openMint;
+    function mintSwitch() external onlyAdmin {
+        _openMint = !_openMint;
     }
 
-    function onSaleGimps(uint[] calldata tokenIds) external onlyAdmin {
-        for (uint i=0; i < tokenIds.length; i++) {
-            onSaleGimps[tokenIds[i]] = true;
-        }
-    }
+    function mint(uint[] calldata gimpiesTokenIds) public payable {
+        uint numPsychonauts = gimpiesTokenIds.length;
 
-    function mint(uint gimpiesTokenId, uint256 _mintAmount) public payable {
         require(_openMint == true, "Psychonauts: minting is currently not open");
         require(tokenIdTracker.current() <= max_supply, "Psychonauts: all tokens have been minted");
-        require(msg.value == price, "Psychonauts: amount sent is incorrect");
         require(
-            hasPyschonaut[gimpiesTokenId] == false,
-            "Psychonauts: this Gimp has already minted a Pyschonaut"
+            tokenIdTracker.current() + numPsychonauts <= max_supply + 1,
+            "Psychonauts: tried to mint too many"
         );
-        if (_hasGimpInPaintswap(msg.sender, gimpiesTokenId) == false) {
+        require(msg.value == price * numPsychonauts, "Psychonauts: amount sent is incorrect");
+
+        for (uint i=0; i < numPsychonauts; ++i) {
+            uint tokenId = gimpiesTokenIds[i];
             require(
-               _theGimpies.ownerOf(gimpiesTokenId) == msg.sender,
+                _theGimpies.ownerOf(tokenId) == msg.sender,
                 "Psychonauts: caller is not owner of that Gimp"
             );
-        require(_mintAmount = );
+            require(
+                hasPyschonaut[tokenId] == false,
+                "Psychonauts: this Gimp has already minted a Psychonaut"
+            );
+            _safeMint(msg.sender, tokenIdTracker.current());
+            _setTokenURI(
+                tokenIdTracker.current(),
+                string(abi.encodePacked(tokenIdTracker.current().toString(), _baseExtension))
+            );
+            hasPyschonaut[tokenId] = true;
+            tokenIdTracker.increment();
         }
-        _safeMint(msg.sender, tokenIdTracker.current());
-        _setTokenURI(
-            tokenIdTracker.current(),
-            string(abi.encodePacked(tokenIdTracker.current().toString(), _baseExtension))
-        );
-        hasPyschonaut[gimpiesTokenId] = true;
-        tokenIdTracker.increment();
 
         _wallet.transfer(msg.value);
     }
@@ -178,11 +177,11 @@ contract Psychonauts is AccessControlEnumerable, ERC721Enumerable, ERC721URIStor
         super._beforeTokenTransfer(from, to, tokenId);
     }
 
-    function _hasGimpInPaintswap(address sender, uint gimpiesTokenId) private view returns (bool) {
-        if (_paintswap.getOwnerOfToken(address(_theGimpies), gimpiesTokenId) == sender) {
-            return true;
-        }
-        return false;
+    //function _hasGimpInPaintswap(address sender, uint gimpiesTokenId) private view returns (bool) {
+        //if (_paintswap.getOwnerOfToken(address(_theGimpies), gimpiesTokenId) == sender) {
+            //return true;
+        //}
+        //return false;
 
-    }
+    //}
 }
