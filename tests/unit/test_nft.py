@@ -59,7 +59,7 @@ def test_valid_mint(contracts):
     
     acc_0_balance = accounts[0].balance()
     token_ids = [4, 6, 5, 7]
-    psychos.mint(token_ids, {"from": accounts[0], "value": "4 ether"})
+    psychos.OGmint(token_ids, {"from": accounts[0], "value": "4 ether"})
     assert psychos.ownerOf(1) == accounts[0]
     assert psychos.ownerOf(2) == accounts[0]
     assert psychos.ownerOf(3) == accounts[0]
@@ -69,20 +69,20 @@ def test_valid_mint(contracts):
 
     acc_1_balance = accounts[1].balance()
     token_ids = [9, 8]
-    psychos.mint(token_ids, {"from": accounts[1], "value": "2 ether"})
+    psychos.OGmint(token_ids, {"from": accounts[1], "value": "2 ether"})
     assert psychos.ownerOf(5) == accounts[1]
     assert psychos.ownerOf(6) == accounts[1]
     accounts[1].balance() == acc_1_balance - "2 ether"
 
     acc_2_balance = accounts[2].balance()
     token_ids = [10]
-    psychos.mint(token_ids, {"from": accounts[2], "value": "1 ether"})
+    psychos.OGmint(token_ids, {"from": accounts[2], "value": "1 ether"})
     assert psychos.ownerOf(7) == accounts[2]
     accounts[2].balance() == acc_2_balance - "1 ether"
 
     acc_0_balance = accounts[0].balance()
     token_ids = [1, 2, 3]
-    psychos.mint(token_ids, {"from": accounts[0], "value": "3 ether"})
+    psychos.OGmint(token_ids, {"from": accounts[0], "value": "3 ether"})
     assert psychos.ownerOf(8) == accounts[0]
     assert psychos.ownerOf(9) == accounts[0]
     assert psychos.ownerOf(10) == accounts[0]
@@ -93,7 +93,7 @@ def test_valid_mint(contracts):
     assert psychos.totalSupply() == 10
 
     with brownie.reverts("Psychonauts: all tokens have been minted"):
-        psychos.mint([1], {"from": accounts[2], "value": "1 ether"})
+        psychos.OGmint([1], {"from": accounts[2], "value": "1 ether"})
 
 
 def test_only_admin(contracts):
@@ -101,7 +101,7 @@ def test_only_admin(contracts):
     admins = [0, 8]
     rabbit_index = 0
     psychos.mintSwitch({"from": accounts[0]})
-    psychos.mint([4, 5], {"from": accounts[0], "value": "2 ether"})
+    psychos.OGmint([4, 5], {"from": accounts[0], "value": "2 ether"})
     for i in range(10):
         if i in admins:
             psychos.mintSwitch({"from": accounts[i]})
@@ -122,10 +122,10 @@ def test_only_admin(contracts):
 def test_minting_closed(contracts):
     psychos, gimpies = contracts
     with brownie.reverts("Psychonauts: minting is currently not open"):
-        psychos.mint([5, 6], {"from": accounts[0], "value": "2 ether"})
+        psychos.OGmint([5, 6], {"from": accounts[0], "value": "2 ether"})
 
     psychos.mintSwitch({"from": accounts[0]})
-    psychos.mint([5, 6], {"from": accounts[0], "value": "2 ether"})
+    psychos.OGmint([5, 6], {"from": accounts[0], "value": "2 ether"})
     assert psychos.totalSupply() == 2
 
 def test_invalid_mint_max_reached(contracts):
@@ -133,12 +133,12 @@ def test_invalid_mint_max_reached(contracts):
     psychos.revealPsychonauts()
     psychos.mintSwitch({"from": accounts[0]})
 
-    psychos.mint([1, 2, 3, 4, 5, 6, 7], {"from": accounts[0], "value": "7 ether"})
-    psychos.mint([8, 9], {"from": accounts[1], "value": "2 ether"})
-    psychos.mint([10], {"from": accounts[2], "value": "1 ether"})
+    psychos.OGmint([1, 2, 3, 4, 5, 6, 7], {"from": accounts[0], "value": "7 ether"})
+    psychos.OGmint([8, 9], {"from": accounts[1], "value": "2 ether"})
+    psychos.OGmint([10], {"from": accounts[2], "value": "1 ether"})
 
     with brownie.reverts("Psychonauts: all tokens have been minted"):
-        psychos.mint([10], {"from": accounts[2], "value": "1 ether"})
+        psychos.OGmint([10], {"from": accounts[2], "value": "1 ether"})
 
 def test_incorrect_mint_price(contracts):
     psychos, gimpies = contracts
@@ -146,13 +146,13 @@ def test_incorrect_mint_price(contracts):
     token_ids_1 = [2, 3, 6]
     token_ids_2 = [9, 8]
     with brownie.reverts("Psychonauts: amount sent is incorrect"):
-        psychos.mint(token_ids_1, {"from": accounts[0], "value": "2.9 ether"})
-        psychos.mint(token_ids_2, {"from": accounts[1], "value": "1.9 ether"})
+        psychos.OGmint(token_ids_1, {"from": accounts[0], "value": "2.9 ether"})
+        psychos.OGmint(token_ids_2, {"from": accounts[1], "value": "1.9 ether"})
     with brownie.reverts("Psychonauts: amount sent is incorrect"):
-        psychos.mint(token_ids_1, {"from": accounts[0], "value": "3.1 ether"})
-        psychos.mint(token_ids_2, {"from": accounts[1], "value": "2.1 ether"})
-    psychos.mint(token_ids_1, {"from": accounts[0], "value": "3 ether"})
-    psychos.mint(token_ids_2, {"from": accounts[1], "value": "2 ether"})
+        psychos.OGmint(token_ids_1, {"from": accounts[0], "value": "3.1 ether"})
+        psychos.OGmint(token_ids_2, {"from": accounts[1], "value": "2.1 ether"})
+    psychos.OGmint(token_ids_1, {"from": accounts[0], "value": "3 ether"})
+    psychos.OGmint(token_ids_2, {"from": accounts[1], "value": "2 ether"})
 
 def test_caller_is_not_owner(contracts):
     psychos, gimpies = contracts
@@ -160,35 +160,35 @@ def test_caller_is_not_owner(contracts):
     token_ids = [4, 2, 7]
 
     with brownie.reverts("Psychonauts: caller is not owner of that Gimp"):
-        psychos.mint([4, 2, 7], {"from": accounts[1], "value": "3 ether"})
-        psychos.mint([4, 2, 8], {"from": accounts[0], "value": "3 ether"})
+        psychos.OGmint([4, 2, 7], {"from": accounts[1], "value": "3 ether"})
+        psychos.OGmint([4, 2, 8], {"from": accounts[0], "value": "3 ether"})
 
-    psychos.mint([4, 2, 7], {"from": accounts[0], "value": "3 ether"})
+    psychos.OGmint([4, 2, 7], {"from": accounts[0], "value": "3 ether"})
 
 def test_gimp_double_mint(contracts):
     psychos, gimpies = contracts
     psychos.mintSwitch({"from": accounts[0]})
 
-    psychos.mint([4, 2, 7], {"from": accounts[0], "value": "3 ether"})
+    psychos.OGmint([4, 2, 7], {"from": accounts[0], "value": "3 ether"})
     assert psychos.hasGimpMintedPsychonaut(4) == True
     assert psychos.hasGimpMintedPsychonaut(2) == True
     assert psychos.hasGimpMintedPsychonaut(7) == True
     with brownie.reverts("Psychonauts: this Gimp has already minted a Psychonaut"):
-        psychos.mint([4, 2, 7], {"from": accounts[0], "value": "3 ether"})
+        psychos.OGmint([4, 2, 7], {"from": accounts[0], "value": "3 ether"})
 
     gimpies.safeTransferFrom(accounts[0], accounts[1], 7)
     with brownie.reverts("Psychonauts: this Gimp has already minted a Psychonaut"):
-        psychos.mint([8, 9, 7], {"from": accounts[1], "value": "3 ether"})
-        psychos.mint([7], {"from": accounts[1], "value": "1 ether"})
+        psychos.OGmint([8, 9, 7], {"from": accounts[1], "value": "3 ether"})
+        psychos.OGmint([7], {"from": accounts[1], "value": "1 ether"})
 
-    psychos.mint([8, 9], {"from": accounts[1], "value": "2 ether"})
+    psychos.OGmint([8, 9], {"from": accounts[1], "value": "2 ether"})
 
 def test_try_to_mint_too_many(contracts):
     psychos, gimpies = contracts
     psychos.mintSwitch({"from": accounts[0]})
 
     with brownie.reverts("Psychonauts: tried to mint too many"):
-        psychos.mint(list(range(11)), {"from": accounts[0], "value": "11 ether"})
+        psychos.OGmint(list(range(11)), {"from": accounts[0], "value": "11 ether"})
 
 def test_change_mint_price(contracts):
     psychos, gimpies = contracts
@@ -196,15 +196,15 @@ def test_change_mint_price(contracts):
     minter_balance = accounts[0].balance()
     psychos.mintSwitch({"from": accounts[0]})
 
-    psychos.mint([4, 5, 6], {"from": accounts[0], "value": "3 ether"})
+    psychos.OGmint([4, 5, 6], {"from": accounts[0], "value": "3 ether"})
     psychos.setPrice("0.5 ether", {"from": accounts[8]})
     with brownie.reverts("Psychonauts: amount sent is incorrect"):
-        psychos.mint([1, 2], {"from": accounts[0], "value": "2 ether"})
+        psychos.OGmint([1, 2], {"from": accounts[0], "value": "2 ether"})
 
-    psychos.mint([1, 2], {"from": accounts[0], "value": "1 ether"})
+    psychos.OGmint([1, 2], {"from": accounts[0], "value": "1 ether"})
 
     psychos.setPrice("0 ether", {"from": accounts[8]})
-    psychos.mint([3, 7], {"from": accounts[0]})
+    psychos.OGmint([3, 7], {"from": accounts[0]})
 
     assert accounts[0].balance() == minter_balance - "4 ether"
     assert accounts[8].balance() == wallet_balance + "4 ether"
@@ -217,9 +217,9 @@ def test_tokenURI(contracts):
     with brownie.reverts("Psychonauts: URI query for nonexistent token"):
         psychos.tokenURI(1)
 
-    psychos.mint([1, 2, 3, 4, 5, 6, 7], {"from": accounts[0], "value": "7 ether"})
-    psychos.mint([8, 9], {"from": accounts[1], "value": "2 ether"})
-    psychos.mint([10], {"from": accounts[2], "value": "1 ether"})
+    psychos.OGmint([1, 2, 3, 4, 5, 6, 7], {"from": accounts[0], "value": "7 ether"})
+    psychos.OGmint([8, 9], {"from": accounts[1], "value": "2 ether"})
+    psychos.OGmint([10], {"from": accounts[2], "value": "1 ether"})
 
     # return not revealed URI
     assert psychos.tokenURI(1) == "not revealed"
@@ -239,3 +239,36 @@ def test_tokenURI(contracts):
     psychos.setBaseURI("", {"from": accounts[8]})
     assert psychos.tokenURI(1) == "new #1"
     assert psychos.tokenURI(10) == "new #10"
+
+def test_public_mint(contracts):
+    psychos, _ = contracts
+    
+    # _openMint == false
+    with brownie.reverts("Psychonauts: minting is currently not open"):
+        psychos.publicMint({"from": accounts[3], "value": "1 ether"})
+
+    # _openPublicMint == false
+    psychos.mintSwitch({"from": accounts[0]})
+    with brownie.reverts("Psychonauts: public minting is currently not open"):
+        psychos.publicMint({"from": accounts[3], "value": "1 ether"})
+
+    # amount set incorrect
+    psychos.publicMintSwitch({"from": accounts[0]})
+    with brownie.reverts("Psychonauts: amount sent is incorrect"):
+        psychos.publicMint({"from": accounts[3], "value": "0.9 ether"})
+
+    # successful mint
+    wallet_balance = accounts[8].balance()
+    for i in range(10):
+        psychos.publicMint({"from": accounts[i], "value": "1 ether"})
+
+    for i in range(10):
+        assert psychos.balanceOf(accounts[i]) == 1
+
+    assert accounts[8].balance() == wallet_balance + "9 ether"
+
+    # all tokens have been minted
+    with brownie.reverts("Psychonauts: all tokens have been minted"):
+        psychos.publicMint({"from": accounts[8], "value": "1 ether"})
+    
+

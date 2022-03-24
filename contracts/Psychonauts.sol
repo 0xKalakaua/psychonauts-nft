@@ -2,12 +2,12 @@
 
 /**
 FTMdead Presents
-██████╗░██╗░░░██╗░██████╗░█████╗░██╗░░██╗░█████╗░███╗░░██╗░█████╗░██╗░░░██╗████████╗░██████╗
-██╔══██╗╚██╗░██╔╝██╔════╝██╔══██╗██║░░██║██╔══██╗████╗░██║██╔══██╗██║░░░██║╚══██╔══╝██╔════╝
-██████╔╝░╚████╔╝░╚█████╗░██║░░╚═╝███████║██║░░██║██╔██╗██║███████║██║░░░██║░░░██║░░░╚█████╗░
-██╔═══╝░░░╚██╔╝░░░╚═══██╗██║░░██╗██╔══██║██║░░██║██║╚████║██╔══██║██║░░░██║░░░██║░░░░╚═══██╗
-██║░░░░░░░░██║░░░██████╔╝╚█████╔╝██║░░██║╚█████╔╝██║░╚███║██║░░██║╚██████╔╝░░░██║░░░██████╔╝
-╚═╝░░░░░░░░╚═╝░░░╚═════╝░░╚════╝░╚═╝░░╚═╝░╚════╝░╚═╝░░╚══╝╚═╝░░╚═╝░╚═════╝░░░░╚═╝░░░╚═════╝░
+██████╗░░██████╗██╗░░░██╗░█████╗░██╗░░██╗░█████╗░███╗░░██╗░█████╗░██╗░░░██╗████████╗░██████╗
+██╔══██╗██╔════╝╚██╗░██╔╝██╔══██╗██║░░██║██╔══██╗████╗░██║██╔══██╗██║░░░██║╚══██╔══╝██╔════╝
+██████╔╝╚█████╗░░╚████╔╝░██║░░╚═╝███████║██║░░██║██╔██╗██║███████║██║░░░██║░░░██║░░░╚█████╗░
+██╔═══╝░░╚═══██╗░░╚██╔╝░░██║░░██╗██╔══██║██║░░██║██║╚████║██╔══██║██║░░░██║░░░██║░░░░╚═══██╗
+██║░░░░░██████╔╝░░░██║░░░╚█████╔╝██║░░██║╚█████╔╝██║░╚███║██║░░██║╚██████╔╝░░░██║░░░██████╔╝
+╚═╝░░░░░╚═════╝░░░░╚═╝░░░░╚════╝░╚═╝░░╚═╝░╚════╝░╚═╝░░╚══╝╚═╝░░╚═╝░╚═════╝░░░░╚═╝░░░╚═════╝░
 A Gimpies Project                                                     contract by 0xKalakaua
 */
 
@@ -33,7 +33,8 @@ contract Psychonauts is AccessControlEnumerable, ERC721Enumerable, ERC721URIStor
     string private _baseExtension;
     string private _notRevealedURI;
     bool private _revealed = false;
-    bool private _openMint;
+    bool private _openMint = false;
+    bool private _openPublicMint = false;
     IERC721 private _theGimpies;
     address payable private _wallet;
 
@@ -56,7 +57,6 @@ contract Psychonauts is AccessControlEnumerable, ERC721Enumerable, ERC721URIStor
         _baseTokenURI = baseURI;
         _baseExtension = baseExtension;
         _notRevealedURI = notRevealedURI;
-        _openMint = false;
         _theGimpies = IERC721(theGimpiesAddress);
         _wallet = wallet;
         _setupRole(DEFAULT_ADMIN_ROLE, wallet);
@@ -92,7 +92,11 @@ contract Psychonauts is AccessControlEnumerable, ERC721Enumerable, ERC721URIStor
         _openMint = !_openMint;
     }
 
-    function mint(uint[] calldata gimpiesTokenIds) public payable {
+    function publicMintSwitch() external onlyAdmin {
+        _openPublicMint = !_openPublicMint;
+    }
+
+    function OGmint(uint[] calldata gimpiesTokenIds) public payable {
         uint numPsychonauts = gimpiesTokenIds.length;
 
         require(_openMint == true, "Psychonauts: minting is currently not open");
@@ -104,23 +108,41 @@ contract Psychonauts is AccessControlEnumerable, ERC721Enumerable, ERC721URIStor
         require(msg.value == price * numPsychonauts, "Psychonauts: amount sent is incorrect");
 
         for (uint i=0; i < numPsychonauts; ++i) {
-            uint tokenId = gimpiesTokenIds[i];
+            uint tokenId = tokenIdTracker.current();
+            uint gimpTokenId = gimpiesTokenIds[i];
+
             require(
-                _theGimpies.ownerOf(tokenId) == msg.sender,
+                _theGimpies.ownerOf(gimpTokenId) == msg.sender,
                 "Psychonauts: caller is not owner of that Gimp"
             );
             require(
-                hasPyschonaut[tokenId] == false,
+                hasPyschonaut[gimpTokenId] == false,
                 "Psychonauts: this Gimp has already minted a Psychonaut"
             );
-            _safeMint(msg.sender, tokenIdTracker.current());
-            _setTokenURI(
-                tokenIdTracker.current(),
-                string(abi.encodePacked(tokenIdTracker.current().toString(), _baseExtension))
-            );
-            hasPyschonaut[tokenId] = true;
             tokenIdTracker.increment();
+            _safeMint(msg.sender, tokenId);
+            _setTokenURI(
+                tokenId, string(abi.encodePacked(tokenId.toString(), _baseExtension))
+            );
+            hasPyschonaut[gimpTokenId] = true;
         }
+
+        _wallet.transfer(msg.value);
+    }
+
+    function publicMint() public payable {
+        uint tokenId = tokenIdTracker.current();
+
+        require(_openMint == true, "Psychonauts: minting is currently not open");
+        require(_openPublicMint == true, "Psychonauts: public minting is currently not open");
+        require(tokenIdTracker.current() <= max_supply, "Psychonauts: all tokens have been minted");
+        require(msg.value == price, "Psychonauts: amount sent is incorrect");
+
+        tokenIdTracker.increment();
+        _safeMint(msg.sender, tokenId);
+        _setTokenURI(
+            tokenId, string(abi.encodePacked(tokenId.toString(), _baseExtension))
+        );
 
         _wallet.transfer(msg.value);
     }
